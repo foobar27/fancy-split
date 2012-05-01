@@ -15,7 +15,7 @@ split into zero or more groups.
 Have a look at the following example, which has been adjusted from the
 [[http://www.gnus.org/manual/gnus_184.html][gnus documentation]]:
 
-#+begin_example
+#+begin_src clojure
 ;; Messages from the mailer daemon are not crossposted to any of
 ;; the ordinary groups.  Warnings are put in a separate group
 ;; from real errors.
@@ -39,7 +39,7 @@ Have a look at the following example, which has been adjusted from the
       (any #"larsi@ifi\.uio\.no" #"people.Lars_Magne_Ingebrigtsen"))
    ;; Unmatched mail goes to the catch all group.
    "misc.misc")
-#+end_example
+#+end_src
 
 Rules can be:
 - nil (and thus be ignored)
