@@ -1,0 +1,68 @@
+* Introduction
+
+Implementation of a domain-specific language for message splitting,
+inspired by the [[http://www.gnus.org/manual/gnus_184.html][gnus fancy splitting mechanism]].
+
+* Warning
+
+This code is still alpha! The API may change without notification.
+
+* Usage
+
+According to the header fields of the message, the message will be
+split into zero or more groups.
+
+Have a look at the following example, which has been adjusted from the
+[[http://www.gnus.org/manual/gnus_184.html][gnus documentation]]:
+
+#+begin_example
+;; Messages from the mailer daemon are not crossposted to any of
+;; the ordinary groups.  Warnings are put in a separate group
+;; from real errors.
+(| (:from mail (| (:subject "warn.*" "mail.warning")
+                  "mail.misc"))
+   ;; Non-error messages are crossposted to all relevant
+   ;; groups, but we don't crosspost between the group for the
+   ;; (ding) list and the group for other (ding) related mail.
+   (& (| (any #"ding@ifi\.uio\.no" "ding.list")
+         (:subject "ding" "ding.misc"))
+      ;; Other mailing lists...
+      (any #"procmail@informatik\.rwth-aachen\.de" "procmail.list")
+      (any #"SmartList@informatik\.rwth-aachen\.de" "SmartList.list")
+      ;; Both lists below have the same suffix, so prevent
+      ;; cross-posting to mkpkg.list of messages posted only to
+      ;; the bugs- list, but allow cross-posting when the
+      ;; message was really cross-posted.
+      (any #"bugs-mypackage@somewhere" "mypkg.bugs")
+      (any #"mypackage@somewhere" - #"bugs-mypackage" "mypkg.list")
+      ;; People...
+      (any #"larsi@ifi\.uio\.no" #"people.Lars_Magne_Ingebrigtsen"))
+   ;; Unmatched mail goes to the catch all group.
+   "misc.misc")
+#+end_example
+
+Rules can be:
+- nil (and thus be ignored)
+- the name of a the message is to be split into,
+- of the form ~([:field1 :field2] value r)~: rule ~r~ will be
+  evaluated recusrively if the message has fields ~:field1~ or
+  ~:field2~ matching ~value~ (if ~value~ is a regex, perform pattern matching,
+  else perform equality check),
+- of the form ~(:field value r)~, which is a shortcut for ~([:field]
+  value r)~,
+- of the form ~(any value r)~, which evaluates ~r~ if any field with
+  value ~value~ exists,
+- of the form ~(| rule1 rule2 rule3 ...)~, which evaluates the rules
+  until the first rule matches,
+- of the form ~(& rule1 rule2 rule3 ...)~, which evaluates all the
+  rules (potentially returns more than one group name) or
+- a function taking a message as input value and returning a rule.
+
+* Todo
+
+Restrictions, as in the above example for ~mypackage@somewhere~, are not implemented yet.
+
+* License
+Copyright (C) 2012 Sébastien Wagener
+
+Distributed under the Eclipse Public License, the same as Clojure.
